@@ -10,6 +10,10 @@ const CATEGORIES = ['Men', 'Women', 'Sneakers', 'Sports', 'New Arrivals', 'Sale'
 const BRANDS = ['Nike', 'Adidas', 'Puma', 'Converse', 'New Balance', 'Other'];
 const SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+const CLOUDINARY_CLOUD  = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+
 const initialForm = {
   name: '',
   brand: '',
@@ -92,11 +96,11 @@ const AddProduct = () => {
     for (const file of validFiles) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'shoehub_upload');
-      formData.append('cloud_name', 'ylfqk1ay');
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('cloud_name', CLOUDINARY_CLOUD);
 
       try {
-        const response = await fetch('https://api.cloudinary.com/v1_1/ylfqk1ay/image/upload', {
+        const response = await fetch('CLOUDINARY_URL', {
           method: 'POST',
           body: formData
         });
@@ -459,12 +463,12 @@ const AddProduct = () => {
                                       const file = e.target.files[0];
                                       const formData = new FormData();
                                       formData.append('file', file);
-                                      formData.append('upload_preset', 'shoehub_upload');
-                                      formData.append('cloud_name', 'ylfqk1ay');
+                                      formData.append('upload_preset', CLOUDINARY_PRESET);
+                                      formData.append('cloud_name', CLOUDINARY_CLOUD);
                                       
                                       setIsUploading(true);
                                       try {
-                                        const res = await fetch('https://api.cloudinary.com/v1_1/ylfqk1ay/image/upload', {
+                                        const res = await fetch('CLOUDINARY_URL', {
                                           method: 'POST',
                                           body: formData
                                         });

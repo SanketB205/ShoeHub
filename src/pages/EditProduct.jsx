@@ -10,6 +10,10 @@ const CATEGORIES = ['Men', 'Women', 'Sneakers', 'Sports', 'New Arrivals', 'Sale'
 const BRANDS     = ['Nike', 'Adidas', 'Puma', 'Converse', 'New Balance', 'Other'];
 const SIZES      = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+const CLOUDINARY_CLOUD  = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+
 const EditProduct = () => {
   const { id } = useParams();
   const { currentUser } = useAuth();
@@ -134,10 +138,10 @@ const EditProduct = () => {
     for (const file of validFiles) {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('upload_preset', 'shoehub_upload');
-      fd.append('cloud_name', 'ylfqk1ay');
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      fd.append('cloud_name', CLOUDINARY_CLOUD);
       try {
-        const res  = await fetch('https://api.cloudinary.com/v1_1/ylfqk1ay/image/upload', { method: 'POST', body: fd });
+        const res  = await fetch('CLOUDINARY_URL', { method: 'POST', body: fd });
         const data = await res.json();
         if (data.secure_url) {
           const newImg = {
@@ -391,11 +395,11 @@ const EditProduct = () => {
                                     const file = e.target.files[0];
                                     const fd = new FormData();
                                     fd.append('file', file);
-                                    fd.append('upload_preset', 'shoehub_upload');
-                                    fd.append('cloud_name', 'ylfqk1ay');
+                                    fd.append('upload_preset', CLOUDINARY_PRESET);
+                                    fd.append('cloud_name', CLOUDINARY_CLOUD);
                                     setIsUploading(true);
                                     try {
-                                      const res  = await fetch('https://api.cloudinary.com/v1_1/ylfqk1ay/image/upload', { method: 'POST', body: fd });
+                                      const res  = await fetch('CLOUDINARY_URL', { method: 'POST', body: fd });
                                       const data = await res.json();
                                       if (data.secure_url) {
                                         setForm(prev => ({

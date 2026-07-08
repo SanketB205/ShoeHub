@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const ProductContext = createContext();
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const useProducts = () => useContext(ProductContext);
 
@@ -11,7 +12,7 @@ export const ProductProvider = ({ children }) => {
   // Fetch products from backend
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch(`${API_BASE}/api/products`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -54,11 +55,9 @@ export const ProductProvider = ({ children }) => {
     };
 
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch(`${API_BASE}/api/products`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct),
       });
       
@@ -77,7 +76,7 @@ export const ProductProvider = ({ children }) => {
 
   const deleteProduct = async (id) => {
     try {
-      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== id));
         return true;
@@ -113,7 +112,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     try {
-      const response = await fetch(`/api/products/${id}`, {
+      const response = await fetch(`${API_BASE}/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedProduct),
