@@ -33,11 +33,14 @@ export const ProductProvider = ({ children }) => {
   const addProduct = async (formData) => {
     let mainImageUrl = '';
     if (formData.images && formData.images.length > 0) {
-      const mainImage = formData.images.find(img => img.isMain);
-      mainImageUrl = mainImage ? mainImage.url : formData.images[0].url;
+      const mainImage = formData.images.find(img => img.isMain) || formData.images[0];
+      mainImageUrl = mainImage.url;
     } else {
       mainImageUrl = formData.imageUrl || '';
     }
+
+    // Strip non-serialisable `file` references before sending to the API
+    const safeImages = (formData.images || []).map(({ file, ...rest }) => rest);
 
     const newProduct = {
       name: formData.name,
@@ -46,7 +49,7 @@ export const ProductProvider = ({ children }) => {
       originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
       rating: 0,
       img: mainImageUrl,
-      images: formData.images || [],
+      images: safeImages,
       badge: formData.badge || '',
       category: formData.category,
       description: formData.description,
@@ -92,11 +95,14 @@ export const ProductProvider = ({ children }) => {
   const updateProduct = async (id, formData) => {
     let mainImageUrl = '';
     if (formData.images && formData.images.length > 0) {
-      const mainImage = formData.images.find(img => img.isMain);
-      mainImageUrl = mainImage ? mainImage.url : formData.images[0].url;
+      const mainImage = formData.images.find(img => img.isMain) || formData.images[0];
+      mainImageUrl = mainImage.url;
     } else {
       mainImageUrl = formData.imageUrl || '';
     }
+
+    // Strip non-serialisable `file` references before sending to the API
+    const safeImages = (formData.images || []).map(({ file, ...rest }) => rest);
 
     const updatedProduct = {
       name: formData.name,
@@ -104,7 +110,7 @@ export const ProductProvider = ({ children }) => {
       price: Number(formData.price),
       originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
       img: mainImageUrl,
-      images: formData.images || [],
+      images: safeImages,
       badge: formData.badge || '',
       category: formData.category,
       description: formData.description,

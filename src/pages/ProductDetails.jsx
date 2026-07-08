@@ -45,11 +45,17 @@ const ProductDetails = () => {
     addToast(`${product.name} (Size: ${selectedSize}) added to cart!`, 'success');
   };
 
-  // Safely compute images for hooks before early return
-  const productImages = product 
-    ? (product.images && product.images.length > 0 
-        ? product.images.map(img => img.url) 
-        : [product.img])
+  // Safely compute images — handles both full image objects and plain URL strings
+  const productImages = product
+    ? (() => {
+        const imgs = product.images && product.images.length > 0
+          ? product.images
+              .map(img => (typeof img === 'string' ? img : img?.url))
+              .filter(Boolean)
+          : [];
+        // Fall back to the single img field if images array is empty
+        return imgs.length > 0 ? imgs : (product.img ? [product.img] : []);
+      })()
     : [];
 
   const nextImage = () => setActiveImage((prev) => (prev + 1) % productImages.length);

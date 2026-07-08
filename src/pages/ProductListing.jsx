@@ -81,7 +81,14 @@ const ProductCard = ({ product }) => {
       <Link to={`/product/${product.id}`} className="product-card">
         <div className="product-img-wrapper">
           {product.badge && <span className="product-badge">{product.badge}</span>}
-          <img src={product.img} alt={product.name} />
+          <img
+            src={
+              product.img ||
+              (product.images && product.images.length > 0 ? product.images[0].url : '')
+            }
+            alt={product.name}
+            onError={e => { e.target.style.display = 'none'; }}
+          />
           {!isAdmin && (
             <div className="product-actions-overlay">
               <button className="btn btn-primary btn-full">View</button>
