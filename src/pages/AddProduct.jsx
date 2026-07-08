@@ -100,7 +100,7 @@ const AddProduct = () => {
       formData.append('cloud_name', CLOUDINARY_CLOUD);
 
       try {
-        const response = await fetch('CLOUDINARY_URL', {
+        const response = await fetch(CLOUDINARY_URL, {
           method: 'POST',
           body: formData
         });
@@ -468,7 +468,7 @@ const AddProduct = () => {
                                       
                                       setIsUploading(true);
                                       try {
-                                        const res = await fetch('CLOUDINARY_URL', {
+                                        const res = await fetch(CLOUDINARY_URL, {
                                           method: 'POST',
                                           body: formData
                                         });

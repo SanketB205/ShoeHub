@@ -141,7 +141,7 @@ const EditProduct = () => {
       fd.append('upload_preset', CLOUDINARY_PRESET);
       fd.append('cloud_name', CLOUDINARY_CLOUD);
       try {
-        const res  = await fetch('CLOUDINARY_URL', { method: 'POST', body: fd });
+        const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
         if (data.secure_url) {
           const newImg = {
@@ -399,7 +399,7 @@ const EditProduct = () => {
                                     fd.append('cloud_name', CLOUDINARY_CLOUD);
                                     setIsUploading(true);
                                     try {
-                                      const res  = await fetch('CLOUDINARY_URL', { method: 'POST', body: fd });
+                                      const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
                                       const data = await res.json();
                                       if (data.secure_url) {
                                         setForm(prev => ({
