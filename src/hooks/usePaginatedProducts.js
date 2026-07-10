@@ -42,11 +42,22 @@ const usePaginatedProducts = ({ page, category, brand, search, sort, minPrice, m
       });
       if (!res.ok) throw new Error(`API error ${res.status}`);
       const json = await res.json();
-      // Normalise: handle both paginated shape and plain array
+      // Normalise: handle both paginated shape { products, totalPages... } and plain array
       if (Array.isArray(json)) {
-        setData({ products: json, totalPages: 1, totalProducts: json.length, productsPerPage: limit, currentPage: 1 });
-      } else {
+        setData({
+          products:        json,
+          totalPages:      1,
+          totalProducts:   json.length,
+          productsPerPage: limit,
+          currentPage:     1,
+          hasNextPage:     false,
+          hasPreviousPage: false,
+        });
+      } else if (json.products !== undefined) {
         setData({ ...json, productsPerPage: json.productsPerPage ?? limit });
+      } else {
+        // Unexpected shape — treat entire json as a single product-like object, ignore
+        setData(prev => ({ ...prev, products: [] }));
       }
     } catch (err) {
       if (err.name !== 'AbortError') {

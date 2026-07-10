@@ -181,10 +181,10 @@ const ProductListing = () => {
   const isAll = activeCategory === 'All';
 
   const {
-    products:       pagedProducts,
-    totalPages,
-    totalProducts,
-    productsPerPage,
+    products:       pagedProducts = [],
+    totalPages      = 1,
+    totalProducts   = 0,
+    productsPerPage = 12,
     loading:        pageLoading,
   } = usePaginatedProducts({
     page:     currentPage,
