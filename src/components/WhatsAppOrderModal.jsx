@@ -56,7 +56,7 @@ const WhatsAppOrderModal = ({ isOpen, onClose, product, selectedSize }) => {
     
     setIsSubmitting(true);
     
-    const adminNumber = '917057130039'; 
+    const adminNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '917057130039';
     
     const productImageUrl = product.images && product.images.length > 0 
       ? product.images[0].url || product.images[0] 

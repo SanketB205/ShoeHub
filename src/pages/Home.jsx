@@ -120,14 +120,14 @@ const Home = () => {
           <Link to="/sneakers" className="view-all">View All <ArrowRight size={16} /></Link>
         </div>
         <div className="collection-grid">
-          <Link to="/sneakers" className="collection-card">
+          <Link to="/sneakers?category=Men" className="collection-card">
             <img src={MENS_COL_IMG} alt="Men's Collection" />
             <div className="collection-info">
               <h3>Men's Collection</h3>
               <span className="explore-link">Explore <ArrowRight size={16} /></span>
             </div>
           </Link>
-          <Link to="/sneakers" className="collection-card">
+          <Link to="/sneakers?category=Women" className="collection-card">
             <img src={WOMENS_COL_IMG} alt="Women's Collection" />
             <div className="collection-info">
               <h3>Women's Collection</h3>
@@ -135,13 +135,13 @@ const Home = () => {
             </div>
           </Link>
           <div className="collection-card smaller-cards">
-            <Link to="/sneakers" className="sub-collection bg-dark">
+            <Link to="/sneakers?category=Sports" className="sub-collection bg-dark">
               <div className="sub-content">
                 <h3>Running</h3>
                 <span>Explore</span>
               </div>
             </Link>
-            <Link to="/sneakers" className="sub-collection bg-accent">
+            <Link to="/sneakers?category=New Arrivals" className="sub-collection bg-accent">
               <div className="sub-content">
                 <h3>Limited Edition</h3>
                 <span>Explore</span>
@@ -157,7 +157,17 @@ const Home = () => {
           <div className="newsletter-content glass-dark">
             <h2>Join Our Exclusive List</h2>
             <p>Get early access to new collections, limited drops, and exclusive offers.</p>
-            <form className="newsletter-form">
+            <form
+              className="newsletter-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const email = e.target.elements[0].value.trim();
+                if (email) {
+                  alert(`Thank you! We'll keep ${email} in the loop.`);
+                  e.target.reset();
+                }
+              }}
+            >
               <input type="email" placeholder="Enter your email address" required />
               <button type="submit" className="btn btn-accent">Subscribe</button>
             </form>

@@ -51,7 +51,7 @@ const CartWhatsAppModal = ({ isOpen, onClose }) => {
     
     setIsSubmitting(true);
     
-    const adminNumber = '917057130039'; 
+    const adminNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '917057130039';
     
     const subtotal = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
     const cartCount = getCartCount();

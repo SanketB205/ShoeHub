@@ -1,0 +1,115 @@
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 0 1rem;
+}
+
+.pagination-counter {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.3px;
+}
+
+.pagination-counter strong {
+  color: var(--color-secondary);
+}
+
+/* ── Nav row ── */
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Shared button base ── */
+.pg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: var(--color-text-muted);
+}
+
+.pg-btn:hover:not(:disabled):not(.active) {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.pg-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Active page ── */
+.pg-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #000;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+}
+
+/* ── Prev / Next ── */
+.pg-prev,
+.pg-next {
+  padding: 0 1rem;
+  gap: 0.4rem;
+}
+
+/* ── Ellipsis ── */
+.pg-ellipsis {
+  min-width: 32px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+/* ── Mobile indicator — hidden on desktop ── */
+.pg-mobile-indicator {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .pg-numbers {
+    display: none;
+  }
+
+  .pg-mobile-indicator {
+    display: inline;
+  }
+
+  .pg-label {
+    display: none;
+  }
+
+  .pg-prev,
+  .pg-next {
+    padding: 0 0.6rem;
+    min-width: 40px;
+  }
+}

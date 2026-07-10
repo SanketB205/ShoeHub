@@ -1,12 +1,40 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp, X, SlidersHorizontal, Trash2, Pencil } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useAuth } from '../context/AuthContext';
+import Pagination from '../components/Pagination';
+import usePaginatedProducts from '../hooks/usePaginatedProducts';
 import './ProductListing.css';
 
 const NAV_CATEGORIES = ['All', 'Men', 'Women', 'Sneakers', 'Sports', 'New Arrivals', 'Sale'];
 const GROUPED_CATEGORIES = ['Men', 'Women', 'Sneakers', 'Sports', 'New Arrivals', 'Sale'];
+const CARDS_PER_ROW_LIMIT = 5; // show max 5 product cards; 6th slot = View All card
+
+const ViewAllCard = ({ category, totalCount }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className="view-all-card"
+      onClick={() => navigate(`/sneakers?category=${encodeURIComponent(category)}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && navigate(`/sneakers?category=${encodeURIComponent(category)}`)}
+      aria-label={`View all ${category} products`}
+    >
+      <div className="view-all-card-inner">
+        <div className="view-all-icon-wrap">
+          <span className="view-all-icon">👟</span>
+        </div>
+        <h3 className="view-all-heading">View All {category}</h3>
+        <hr className="view-all-divider" />
+        <p className="view-all-count">{totalCount} Products</p>
+        <span className="view-all-cta">Browse Collection <span className="view-all-arrow">→</span></span>
+      </div>
+    </div>
+  );
+};
 
 const FilterGroup = ({ title, isOpen, onToggle, children }) => {
   return (
@@ -136,29 +164,65 @@ const ProductCard = ({ product }) => {
 };
 
 const ProductListing = () => {
-  const { products } = useProducts();
+  const { products } = useProducts();   // used only for "All" grouped view + filter counts
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen]     = useState(false);
   const [openFilterGroup, setOpenFilterGroup] = useState('Category');
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [userPriceMax, setUserPriceMax] = useState(null);
-  const [sortBy, setSortBy] = useState('newest');
+  const [selectedBrands, setSelectedBrands]   = useState([]);
+  const [userPriceMax, setUserPriceMax]        = useState(null);
+  const [sortBy, setSortBy]                   = useState('newest');
+  const gridRef = useRef(null);
 
-  // Derive the actual max price from products so the slider scales correctly
+  const activeCategory = searchParams.get('category') || 'All';
+  const searchQuery    = searchParams.get('search')   || '';
+  const currentPage    = parseInt(searchParams.get('page') || '1', 10);
+
+  // ── Paginated data for single-category view ───────────────────
+  const isAll = activeCategory === 'All';
+
+  const {
+    products:       pagedProducts,
+    totalPages,
+    totalProducts,
+    productsPerPage,
+    loading:        pageLoading,
+  } = usePaginatedProducts({
+    page:     currentPage,
+    category: isAll ? null : activeCategory,
+    brand:    selectedBrands.length > 0 ? selectedBrands.join(',') : null,
+    search:   searchQuery || null,
+    sort:     sortBy,
+    minPrice: null,
+    maxPrice: userPriceMax,
+  });
+
+  // Smooth-scroll to grid top whenever page changes
+  useEffect(() => {
+    if (!isAll && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentPage, isAll]);
+
+  // ── Price slider max derived from ALL products ────────────────
   const maxProductPrice = useMemo(
     () => Math.max(500, ...products.map(p => p.price)),
     [products]
   );
-
   const priceMax = userPriceMax !== null ? userPriceMax : maxProductPrice;
-
-  const activeCategory = searchParams.get('category') || 'All';
-  const searchQuery = searchParams.get('search') || '';
 
   const setCategory = (cat) => {
     const params = {};
     if (cat !== 'All') params.category = cat;
     if (searchQuery) params.search = searchQuery;
+    // reset to page 1 when category changes
+    setSearchParams(params);
+  };
+
+  const handlePageChange = (page) => {
+    const params = {};
+    if (activeCategory !== 'All') params.category = activeCategory;
+    if (searchQuery) params.search = searchQuery;
+    if (page > 1) params.page = page;
     setSearchParams(params);
   };
 
@@ -168,6 +232,8 @@ const ProductListing = () => {
     setSelectedBrands(prev =>
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
     );
+    // reset to page 1
+    handlePageChange(1);
   };
 
   const clearFilters = () => {
@@ -177,7 +243,7 @@ const ProductListing = () => {
     setSearchParams({});
   };
 
-  // Keep original fetch order as the "newest" reference
+  // ── "All" grouped view — still uses in-memory products ────────
   const productOrder = useMemo(
     () => new Map(products.map((p, i) => [p.id, i])),
     [products]
@@ -185,7 +251,6 @@ const ProductListing = () => {
 
   const applyFiltersAndSort = useCallback((list) => {
     let result = [...list];
-
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(p =>
@@ -195,53 +260,38 @@ const ProductListing = () => {
         (p.modelName && p.modelName.toLowerCase().includes(q))
       );
     }
-
     if (selectedBrands.length > 0) result = result.filter(p => selectedBrands.includes(p.brand));
     result = result.filter(p => p.price <= priceMax);
-
     switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => Number(a.price) - Number(b.price));
-        break;
-      case 'price-desc':
-        result.sort((a, b) => Number(b.price) - Number(a.price));
-        break;
-      case 'newest':
+      case 'price-asc':  result.sort((a, b) => Number(a.price) - Number(b.price)); break;
+      case 'price-desc': result.sort((a, b) => Number(b.price) - Number(a.price)); break;
       default:
-        // Restore original insertion order (API returns newest first)
         result.sort((a, b) => {
           const ia = productOrder.get(a.id) ?? Infinity;
           const ib = productOrder.get(b.id) ?? Infinity;
           return ia - ib;
         });
-        break;
     }
     return result;
   }, [searchQuery, selectedBrands, priceMax, sortBy, productOrder]);
 
-  const filtered = useMemo(() => {
-    const base = activeCategory === 'All'
-      ? products
-      : products.filter(p => p.category === activeCategory);
-    return applyFiltersAndSort(base);
-  }, [products, activeCategory, applyFiltersAndSort]);
-
   const grouped = useMemo(() => {
     return GROUPED_CATEGORIES
       .map(cat => ({
-        category: cat,
-        items: applyFiltersAndSort(products.filter(p => p.category === cat)),
+        category:   cat,
+        totalCount: products.filter(p => p.category === cat).length,
+        items:      applyFiltersAndSort(products.filter(p => p.category === cat)),
       }))
       .filter(group => group.items.length > 0);
   }, [products, applyFiltersAndSort]);
 
-  const isAll = activeCategory === 'All';
-  const pageTitle = searchQuery 
+  const pageTitle = searchQuery
     ? `Search Results for "${searchQuery}"`
     : isAll ? 'All Products' : activeCategory;
+
   const totalShowing = isAll
     ? grouped.reduce((sum, g) => sum + g.items.length, 0)
-    : filtered.length;
+    : totalProducts;
 
   return (
     <div className="product-listing-page">
@@ -264,7 +314,7 @@ const ProductListing = () => {
           {filterOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         <div className="sort-dropdown mobile-sort">
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <select value={sortBy} onChange={e => { setSortBy(e.target.value); handlePageChange(1); }}>
             <option value="newest">Newest</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
@@ -343,7 +393,7 @@ const ProductListing = () => {
               <input
                 type="range" min="0" max={maxProductPrice}
                 value={priceMax}
-                onChange={e => setUserPriceMax(Number(e.target.value))}
+                onChange={e => { setUserPriceMax(Number(e.target.value)); handlePageChange(1); }}
                 className="price-slider"
               />
               <div className="price-labels">
@@ -359,12 +409,14 @@ const ProductListing = () => {
         <section className="product-grid-section">
           <div className="grid-header desktop-grid-header">
             <p>
-              Showing <strong>{totalShowing}</strong> result{totalShowing !== 1 ? 's' : ''}
-              {!isAll ? ` in "${activeCategory}"` : ''}
+              {!isAll && !pageLoading && totalProducts > 0
+                ? <>Showing <strong>{(currentPage - 1) * productsPerPage + 1}–{Math.min(currentPage * productsPerPage, totalProducts)}</strong> of <strong>{totalProducts}</strong> Products</>
+                : <>Showing <strong>{totalShowing}</strong> result{totalShowing !== 1 ? 's' : ''}{!isAll ? ` in "${activeCategory}"` : ''}</>
+              }
             </p>
             <div className="sort-dropdown">
               <span>Sort by:</span>
-              <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+              <select value={sortBy} onChange={e => { setSortBy(e.target.value); handlePageChange(1); }}>
                 <option value="newest">Newest</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
@@ -383,7 +435,7 @@ const ProductListing = () => {
               </div>
             ) : (
               <div className="all-categories-view">
-                {grouped.map(({ category, items }) => (
+                {grouped.map(({ category, items, totalCount }) => (
                   <div key={category} className="category-section">
                     <div className="category-section-header">
                       <h2 className="category-section-title">{category}</h2>
@@ -395,17 +447,37 @@ const ProductListing = () => {
                       </Link>
                     </div>
                     <div className="products-grid">
-                      {items.map(product => (
+                      {(totalCount > CARDS_PER_ROW_LIMIT
+                        ? items.slice(0, CARDS_PER_ROW_LIMIT)
+                        : items
+                      ).map(product => (
                         <ProductCard key={product.id} product={product} />
                       ))}
+                      {totalCount > CARDS_PER_ROW_LIMIT && (
+                        <ViewAllCard category={category} totalCount={totalCount} />
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             )
           ) : (
-            /* Single category view — flat grid */
-            filtered.length === 0 ? (
+            /* Single category view — paginated */
+            pageLoading ? (
+              /* Loading skeleton — same grid, placeholder cards */
+              <div className="products-grid">
+                {Array.from({ length: productsPerPage }).map((_, i) => (
+                  <div key={i} className="product-card skeleton-card">
+                    <div className="skeleton-img" />
+                    <div className="skeleton-info">
+                      <div className="skeleton-line short" />
+                      <div className="skeleton-line" />
+                      <div className="skeleton-line medium" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : pagedProducts.length === 0 ? (
               <div className="no-results">
                 <span>😕</span>
                 <h3>No products found</h3>
@@ -413,11 +485,20 @@ const ProductListing = () => {
                 <button className="btn btn-accent" onClick={clearFilters}>Clear Filters</button>
               </div>
             ) : (
-              <div className="products-grid">
-                {filtered.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className="products-grid" ref={gridRef}>
+                  {pagedProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalProducts={totalProducts}
+                  productsPerPage={productsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              </>
             )
           )}
         </section>

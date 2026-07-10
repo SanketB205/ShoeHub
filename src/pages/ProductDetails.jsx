@@ -19,7 +19,11 @@ const ProductDetails = () => {
   const { currentUser } = useAuth();
   const { toggle, isWishlisted } = useWishlist();
 
-  const product = products.find(p => p.id === Number(id));
+  // Stable review count per product — avoids new random on every re-render
+  const reviewCount = React.useMemo(() => Math.floor(Math.random() * 200) + 50, []);
+
+  // Match product by id — handles both numeric and string IDs from backend
+  const product = products.find(p => String(p.id) === String(id));
 
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -161,7 +165,7 @@ const ProductDetails = () => {
                 ))}
               </div>
               <span className="rating-score">{product.rating || '4.0'}</span>
-              <span className="reviews-count">({Math.floor(Math.random() * 200)} Reviews)</span>
+              <span className="reviews-count">({reviewCount} Reviews)</span>
               <span className="separator">|</span>
               <button className="write-review">Write a review</button>
             </div>

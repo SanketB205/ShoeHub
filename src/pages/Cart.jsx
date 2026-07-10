@@ -25,11 +25,6 @@ const Cart = () => {
   }, [currentUser, navigate]);
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
-  const totalOriginalPrice = cartItems.reduce((acc, item) => {
-    const original = item.product.originalPrice || item.product.price;
-    return acc + (original * item.quantity);
-  }, 0);
-
   const actualSubtotal = subtotal;
 
   // Mock recommendations
@@ -272,7 +267,11 @@ const Cart = () => {
                   <div className="mini-price">₹{prod.price.toLocaleString('en-IN')}</div>
                 </div>
                 {currentUser?.role !== 'admin' && (
-                  <button className="mini-add-btn" title="Add to Cart">🛍️</button>
+                  <button
+                    className="mini-add-btn"
+                    title="Add to Cart"
+                    onClick={() => addToCart(prod, prod.sizes?.[0] || 7)}
+                  >🛍️</button>
                 )}
               </div>
             ))}
@@ -296,7 +295,11 @@ const Cart = () => {
                   <div className="mini-price">₹{prod.price.toLocaleString('en-IN')}</div>
                 </div>
                 {currentUser?.role !== 'admin' && (
-                  <button className="mini-add-btn" title="Add to Cart">🛍️</button>
+                  <button
+                    className="mini-add-btn"
+                    title="Add to Cart"
+                    onClick={() => addToCart(prod, prod.sizes?.[0] || 7)}
+                  >🛍️</button>
                 )}
               </div>
             ))}
@@ -312,7 +315,12 @@ const Cart = () => {
             <span className="label">Grand Total</span>
             <span className="value">₹{actualSubtotal.toLocaleString('en-IN')}</span>
           </div>
-          <button className="btn btn-accent btn-mobile-checkout">Checkout</button>
+          <button
+            className="btn btn-accent btn-mobile-checkout"
+            onClick={() => setIsWhatsAppModalOpen(true)}
+          >
+            Checkout
+          </button>
         </div>
       )}
 

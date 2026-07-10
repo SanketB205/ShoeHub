@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const ProductContext = createContext();
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const useProducts = () => useContext(ProductContext);
 
@@ -9,13 +8,15 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch products from backend
+  // Fetch products from backend — uses large limit to get all for grouped view & filter counts
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/products`);
+      const response = await fetch(`/api/products?limit=500`);
       if (response.ok) {
         const data = await response.json();
-        setProducts(data);
+        // Handle both paginated response shape and plain array (backwards compat)
+        const list = Array.isArray(data) ? data : (data.products || []);
+        setProducts(list);
       } else {
         console.error('Failed to fetch products');
       }
@@ -58,7 +59,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     try {
-      const response = await fetch(`${API_BASE}/api/products`, {
+      const response = await fetch(`/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct),
@@ -79,7 +80,7 @@ export const ProductProvider = ({ children }) => {
 
   const deleteProduct = async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/api/products/${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== id));
         return true;
@@ -118,7 +119,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     try {
-      const response = await fetch(`${API_BASE}/api/products/${id}`, {
+      const response = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedProduct),
