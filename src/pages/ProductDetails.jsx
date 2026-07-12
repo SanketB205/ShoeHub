@@ -49,15 +49,20 @@ const ProductDetails = () => {
     addToast(`${product.name} (Size: ${selectedSize}) added to cart!`, 'success');
   };
 
-  // Safely compute images — handles both full image objects and plain URL strings
+  // Safely compute images — main image first, handles both full objects and plain URL strings
   const productImages = product
     ? (() => {
         const imgs = product.images && product.images.length > 0
-          ? product.images
+          ? [...product.images]
+              .sort((a, b) => {
+                // isMain image first
+                if (a.isMain && !b.isMain) return -1;
+                if (!a.isMain && b.isMain) return 1;
+                return 0;
+              })
               .map(img => (typeof img === 'string' ? img : img?.url))
               .filter(Boolean)
           : [];
-        // Fall back to the single img field if images array is empty
         return imgs.length > 0 ? imgs : (product.img ? [product.img] : []);
       })()
     : [];

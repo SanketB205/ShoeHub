@@ -851,43 +851,5 @@
 }
 
 /* ── Skeleton loading cards ── */
-@keyframes skeleton-shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
+/* Skeleton styles have been migrated to index.css for global premium shimmer */
 
-.skeleton-card {
-  pointer-events: none;
-  cursor: default;
-  border-color: rgba(255, 255, 255, 0.04) !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.skeleton-img {
-  aspect-ratio: 1;
-  width: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #1a1a1a 25%, #242424 50%, #1a1a1a 75%);
-  background-size: 800px 100%;
-  animation: skeleton-shimmer 1.4s infinite linear;
-}
-
-.skeleton-info {
-  padding: 1rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.skeleton-line {
-  height: 12px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #1a1a1a 25%, #242424 50%, #1a1a1a 75%);
-  background-size: 800px 100%;
-  animation: skeleton-shimmer 1.4s infinite linear;
-  width: 100%;
-}
-
-.skeleton-line.short  { width: 40%; }
-.skeleton-line.medium { width: 60%; }

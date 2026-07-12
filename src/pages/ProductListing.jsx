@@ -164,7 +164,7 @@ const ProductCard = ({ product }) => {
 };
 
 const ProductListing = () => {
-  const { products } = useProducts();   // used only for "All" grouped view + filter counts
+  const { products, refreshKey } = useProducts();   // used only for "All" grouped view + filter counts
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen]     = useState(false);
   const [openFilterGroup, setOpenFilterGroup] = useState('Category');
@@ -194,6 +194,7 @@ const ProductListing = () => {
     sort:     sortBy,
     minPrice: null,
     maxPrice: userPriceMax,
+    refreshKey,
   });
 
   // Smooth-scroll to grid top whenever page changes
@@ -426,7 +427,30 @@ const ProductListing = () => {
 
           {/* ALL view — grouped by category */}
           {isAll ? (
-            grouped.length === 0 ? (
+            products.length === 0 ? (
+              <div className="all-categories-view">
+                {/* Render a few skeleton groups to simulate loading categories */}
+                {[1, 2, 3].map((groupKey) => (
+                  <div key={groupKey} className="category-section">
+                    <div className="category-section-header">
+                      <h2 className="category-section-title skeleton-shimmer" style={{ width: '150px', height: '24px', borderRadius: '4px', background: 'transparent' }}></h2>
+                    </div>
+                    <div className="products-grid">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="product-card skeleton-bg" style={{ pointerEvents: 'none' }}>
+                          <div className="skeleton-img skeleton-shimmer" style={{ aspectRatio: '1', width: '100%', borderRadius: '4px' }} />
+                          <div className="skeleton-info" style={{ padding: '1rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '40%' }} />
+                            <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '100%' }} />
+                            <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '60%' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : grouped.length === 0 ? (
               <div className="no-results">
                 <span>😕</span>
                 <h3>No products found</h3>
@@ -467,12 +491,12 @@ const ProductListing = () => {
               /* Loading skeleton — same grid, placeholder cards */
               <div className="products-grid">
                 {Array.from({ length: productsPerPage }).map((_, i) => (
-                  <div key={i} className="product-card skeleton-card">
-                    <div className="skeleton-img" />
-                    <div className="skeleton-info">
-                      <div className="skeleton-line short" />
-                      <div className="skeleton-line" />
-                      <div className="skeleton-line medium" />
+                  <div key={i} className="product-card skeleton-bg" style={{ pointerEvents: 'none' }}>
+                    <div className="skeleton-img skeleton-shimmer" style={{ aspectRatio: '1', width: '100%', borderRadius: '4px' }} />
+                    <div className="skeleton-info" style={{ padding: '1rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '40%' }} />
+                      <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '100%' }} />
+                      <div className="skeleton-shimmer" style={{ height: '12px', borderRadius: '6px', width: '60%' }} />
                     </div>
                   </div>
                 ))}

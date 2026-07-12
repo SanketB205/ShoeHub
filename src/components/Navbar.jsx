@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, ShoppingCart, User, Menu, X, LogOut, Shield, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -16,9 +16,29 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
   const { getCartCount } = useCart();
   const { getWishlistCount } = useWishlist();
+  const profileRef = useRef(null);
+
+  // Click outside to close profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    
+    // Only attach the listener if the dropdown is open
+    if (profileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +47,21 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Debounced Search Effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchOpen && searchQuery.trim() !== '') {
+        navigate(`/sneakers?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else if (searchOpen && searchQuery === '' && location.pathname === '/sneakers') {
+         // If they clear the search while on the sneakers page, remove the search param
+         navigate(`/sneakers`);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, searchOpen, navigate, location.pathname]);
+
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -149,7 +184,7 @@ const Navbar = () => {
             )}
             
             {currentUser ? (
-              <div className="profile-menu-container">
+              <div className="profile-menu-container" ref={profileRef}>
                 <button 
                   className="icon-btn active-user"
                   onClick={() => setProfileOpen(!profileOpen)}

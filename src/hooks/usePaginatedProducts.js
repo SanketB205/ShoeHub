@@ -11,7 +11,7 @@ const getLimit = () => {
   return 12;
 };
 
-const usePaginatedProducts = ({ page, category, brand, search, sort, minPrice, maxPrice }) => {
+const usePaginatedProducts = ({ page, category, brand, search, sort, minPrice, maxPrice, refreshKey = 0 }) => {
   const [data, setData]       = useState({ products: [], totalPages: 1, totalProducts: 0, productsPerPage: 12, currentPage: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
@@ -67,7 +67,7 @@ const usePaginatedProducts = ({ page, category, brand, search, sort, minPrice, m
     } finally {
       setLoading(false);
     }
-  }, [page, category, brand, search, sort, minPrice, maxPrice]);
+  }, [page, category, brand, search, sort, minPrice, maxPrice, refreshKey]);
 
   useEffect(() => {
     fetchPage();

@@ -6,7 +6,8 @@ export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0); // incremented to signal paginated hook to re-fetch
 
   // Fetch products from backend — uses large limit to get all for grouped view & filter counts
   const fetchProducts = async () => {
@@ -68,6 +69,7 @@ export const ProductProvider = ({ children }) => {
       if (response.ok) {
         const addedProduct = await response.json();
         setProducts(prev => [addedProduct, ...prev]);
+        setRefreshKey(k => k + 1);
         return addedProduct.id;
       } else {
         console.error('Failed to add product');
@@ -83,6 +85,7 @@ export const ProductProvider = ({ children }) => {
       const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== id));
+        setRefreshKey(k => k + 1);
         return true;
       } else {
         console.error('Failed to delete product');
@@ -127,7 +130,8 @@ export const ProductProvider = ({ children }) => {
 
       if (response.ok) {
         const saved = await response.json();
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...saved } : p));
+        setProducts(prev => prev.map(p => String(p.id) === String(id) ? { ...p, ...saved } : p));
+        setRefreshKey(k => k + 1);
         return true;
       } else {
         console.error('Failed to update product');
@@ -139,7 +143,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, loading }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, loading, refreshKey }}>
       {children}
     </ProductContext.Provider>
   );
