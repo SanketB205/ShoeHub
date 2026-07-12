@@ -16,7 +16,12 @@ const SEED_PRODUCTS = [
 const seedDB = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ force: true }); // Reset DB
+
+    // Disable FK checks so force:true can drop tables in any order
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    await sequelize.sync({ force: true });
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+
     await Product.bulkCreate(SEED_PRODUCTS);
     
     const salt = await bcrypt.genSalt(10);
