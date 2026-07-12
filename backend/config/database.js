@@ -2,57 +2,59 @@ require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
 /**
- * Resolves database config from environment variables.
- * Supports two naming conventions:
- *   - Standard:  DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT, DB_DIALECT
- *   - Railway:   MYSQLHOST, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE, MYSQLPORT
+ * Connection priority (highest → lowest):
  *
- * Railway values take priority when present.
+ * 1. MYSQL_PUBLIC_URL  — single connection string (e.g. mysql://user:pass@host:port/db)
+ *    Railway provides this as "Public URL" in the MySQL service Connect tab.
+ *    Works from both local machines and Railway deployments.
+ *
+ * 2. MYSQL* variables  — Railway's auto-injected internal vars (MYSQLHOST, etc.)
+ *    Only reachable from within Railway's private network.
+ *
+ * 3. DB_* variables    — standard individual vars for any environment.
  */
-const dbName     = process.env.MYSQLDATABASE || process.env.DB_NAME;
-const dbUser     = process.env.MYSQLUSER     || process.env.DB_USER;
-const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD;
-const dbHost     = process.env.MYSQLHOST     || process.env.DB_HOST     || 'localhost';
-const dbPort     = parseInt(process.env.MYSQLPORT || process.env.DB_PORT || '3306', 10);
-const dbDialect  = process.env.DB_DIALECT    || 'mysql';
 
-if (!dbName || !dbUser || dbPassword === undefined) {
-  console.error(
-    '[Database] Missing required environment variables. ' +
-    'Set DB_NAME, DB_USER, DB_PASSWORD (or their MYSQL* equivalents).'
-  );
-  process.exit(1);
-}
+let sequelize;
 
-const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-  host:    dbHost,
-  port:    dbPort,
-  dialect: dbDialect,
-  logging: false,
+const MYSQL_PUBLIC_URL = process.env.MYSQL_PUBLIC_URL;
 
-  dialectOptions: {
-    // Required for Railway's internal MySQL — keeps connections alive
-    connectTimeout: 30000,
-  },
-
-  pool: {
-    max:     10,
-    min:     0,
-    acquire: 30000,  // ms to wait before throwing an error if no connection is available
-    idle:    10000,  // ms a connection can be idle before being released
-  },
-});
-
-/**
- * Test the connection and log the result.
- * Called from server.js — errors are handled there.
- */
-sequelize.authenticate()
-  .then(() => {
-    console.log(`[Database] Connected to "${dbName}" on ${dbHost}:${dbPort}`);
-  })
-  .catch(err => {
-    console.error('[Database] Connection failed:', err.message);
+if (MYSQL_PUBLIC_URL) {
+  // ── Option 1: single connection string ───────────────────────
+  sequelize = new Sequelize(MYSQL_PUBLIC_URL, {
+    dialect: 'mysql',
+    logging: false,
+    dialectOptions: { connectTimeout: 30000 },
+    pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
   });
+
+  console.log('[Database] Using MYSQL_PUBLIC_URL');
+
+} else {
+  // ── Option 2 / 3: individual variables ───────────────────────
+  const dbName     = process.env.MYSQLDATABASE || process.env.DB_NAME;
+  const dbUser     = process.env.MYSQLUSER     || process.env.DB_USER;
+  const dbPassword = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD;
+  const dbHost     = process.env.MYSQLHOST     || process.env.DB_HOST || 'localhost';
+  const dbPort     = parseInt(process.env.MYSQLPORT || process.env.DB_PORT || '3306', 10);
+
+  if (!dbName || !dbUser || dbPassword === undefined) {
+    console.error(
+      '[Database] Missing credentials. Set MYSQL_PUBLIC_URL ' +
+      'or DB_NAME / DB_USER / DB_PASSWORD (or MYSQL* equivalents).'
+    );
+    process.exit(1);
+  }
+
+  console.log(`[Database] Connecting to "${dbName}" on ${dbHost}:${dbPort}`);
+
+  sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+    host:    dbHost,
+    port:    dbPort,
+    dialect: 'mysql',
+    logging: false,
+    dialectOptions: { connectTimeout: 30000 },
+    pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
+  });
+}
 
 module.exports = sequelize;

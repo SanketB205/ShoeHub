@@ -42,19 +42,19 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cart', cartRoutes);
 
-// Test database connection and sync models
+// Connect to database, sync models, then start server
 sequelize.authenticate()
   .then(() => {
-    console.log('Database connected successfully.');
-    // Sync models
-    return sequelize.sync(); 
+    console.log('[Database] Connection established successfully.');
+    return sequelize.sync({ alter: false }); // alter:false = safe — won't drop columns
   })
   .then(() => {
-    console.log('Models synchronized.');
+    console.log('[Database] Models synchronized. Tables are ready.');
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`[Server] Running on port ${PORT}`);
     });
   })
   .catch(err => {
-    console.error('Unable to connect to the database:', err);
+    console.error('[Database] Unable to connect:', err.message);
+    process.exit(1);
   });
