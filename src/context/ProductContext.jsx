@@ -1,18 +1,18 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const ProductContext = createContext();
+const API = import.meta.env.VITE_API_BASE_URL || '';  // empty string = relative (local proxy)
 
 export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0); // incremented to signal paginated hook to re-fetch
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch products from backend — uses large limit to get all for grouped view & filter counts
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`/api/products?limit=500`);
+      const response = await fetch(`${API}/api/products?limit=500`);
       if (response.ok) {
         const data = await response.json();
         // Handle both paginated response shape and plain array (backwards compat)

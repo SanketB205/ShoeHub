@@ -21,7 +21,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Parse allowed origins — supports comma-separated list in CORS_ORIGIN
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,https://shooes-web.vercel.app')
   .split(',')
   .map(o => o.trim());
 
