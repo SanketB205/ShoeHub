@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Heart, Expand, ChevronLeft, ChevronRight, Truck, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import './ProductDetails.css';
@@ -31,6 +31,8 @@ const ProductDetails = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const touchStartX = useRef(null);
+  const imageWasSwiped = useRef(false);
 
   const handleBuyNowClick = () => {
     if (!selectedSize) {
@@ -82,6 +84,34 @@ const ProductDetails = () => {
   const lightboxPrev = useCallback(() =>
     setLightboxIndex((prev) => (prev - 1 + productImages.length) % productImages.length), [productImages.length]);
 
+  const handleImageTouchStart = (event) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+    imageWasSwiped.current = false;
+  };
+
+  const handleImageTouchEnd = (event, onNext, onPrev) => {
+    const startX = touchStartX.current;
+    const endX = event.changedTouches[0]?.clientX;
+    touchStartX.current = null;
+
+    if (startX === null || endX === undefined || productImages.length < 2) return;
+
+    const swipeDistance = endX - startX;
+    if (Math.abs(swipeDistance) < 50) return;
+
+    imageWasSwiped.current = true;
+    if (swipeDistance < 0) onNext();
+    else onPrev();
+  };
+
+  const handleMainImageClick = () => {
+    if (imageWasSwiped.current) {
+      imageWasSwiped.current = false;
+      return;
+    }
+    openLightbox(activeImage);
+  };
+
   // Keyboard navigation for lightbox
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -132,16 +162,48 @@ const ProductDetails = () => {
               )}
             </div>
             
-            <div className="main-image">
+            <div
+              className="main-image"
+              onTouchStart={handleImageTouchStart}
+              onTouchEnd={(event) => handleImageTouchEnd(event, nextImage, prevImage)}
+            >
               {product.badge && <div className="new-badge">{product.badge.toUpperCase()}</div>}
               <button className="expand-btn" onClick={() => openLightbox(activeImage)} aria-label="View full size image">
                 <Expand size={18} />
               </button>
               
               {productImages.length > 1 && <button className="nav-arrow left" onClick={prevImage}><ChevronLeft size={24} /></button>}
-              <img src={productImages[activeImage]} alt={product.name} />
+              <img
+                src={productImages[activeImage]}
+                alt={`${product.name} — click to view full size`}
+                className="main-product-image"
+                onClick={handleMainImageClick}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openLightbox(activeImage);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View full size image of ${product.name}`}
+              />
               {productImages.length > 1 && <button className="nav-arrow right" onClick={nextImage}><ChevronRight size={24} /></button>}
             </div>
+
+            {/* Swipe dot indicators — mobile only */}
+            {productImages.length > 1 && (
+              <div className="swipe-dots" aria-hidden="true">
+                {productImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`swipe-dot ${idx === activeImage ? 'active' : ''}`}
+                    onClick={() => setActiveImage(idx)}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -323,14 +385,21 @@ const ProductDetails = () => {
       {/* Lightbox Modal */}
       {lightboxOpen && (
         <div className="lightbox-overlay" onClick={closeLightbox} role="dialog" aria-modal="true" aria-label="Image viewer">
-          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleImageTouchStart}
+            onTouchEnd={(event) => handleImageTouchEnd(event, lightboxNext, lightboxPrev)}
+          >
             <button className="lightbox-close" onClick={closeLightbox} aria-label="Close">
               <X size={24} />
             </button>
 
-            <button className="lightbox-arrow left" onClick={lightboxPrev} aria-label="Previous image">
-              <ChevronLeft size={32} />
-            </button>
+            {productImages.length > 1 && (
+              <button className="lightbox-arrow left" onClick={lightboxPrev} aria-label="Previous image">
+                <ChevronLeft size={32} />
+              </button>
+            )}
 
             <img
               src={productImages[lightboxIndex]}
