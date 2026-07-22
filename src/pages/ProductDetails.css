@@ -34,14 +34,17 @@
 .product-gallery {
   flex: 1;
   display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
 .thumbnails {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 1rem;
-  width: 80px;
+  width: 100%;
   align-items: center;
 }
 
@@ -70,8 +73,10 @@
 
 .thumbnail-more-icon {
   color: #888;
-  margin-top: 0.5rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .main-image {
@@ -725,6 +730,44 @@
   .lightbox-arrow { display: none; }
   .lightbox-img { max-width: 95vw; max-height: 60vh; }
   .lightbox-thumb { width: 48px; height: 48px; }
+}
+
+/* ── Image loading state ── */
+.img-loading {
+  filter: blur(8px);
+  transform: scale(1.04);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.img-ready {
+  filter: none;
+  transform: scale(1);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.img-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.35);
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+.img-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── Swipe dot indicators (mobile only) ── */

@@ -26,6 +26,7 @@ const ProductDetails = () => {
   const product = products.find(p => String(p.id) === String(id));
 
   const [activeImage, setActiveImage] = useState(0);
+  const [imgLoaded, setImgLoaded]     = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -69,8 +70,8 @@ const ProductDetails = () => {
       })()
     : [];
 
-  const nextImage = () => setActiveImage((prev) => (prev + 1) % productImages.length);
-  const prevImage = () => setActiveImage((prev) => (prev - 1 + productImages.length) % productImages.length);
+  const nextImage = () => { setImgLoaded(false); setActiveImage((prev) => (prev + 1) % productImages.length); };
+  const prevImage = () => { setImgLoaded(false); setActiveImage((prev) => (prev - 1 + productImages.length) % productImages.length); };
 
   const openLightbox = (index) => {
     setLightboxIndex(index);
@@ -145,23 +146,6 @@ const ProductDetails = () => {
         <div className="product-layout">
           {/* Image Gallery */}
           <div className="product-gallery">
-            <div className="thumbnails">
-              {productImages.map((img, idx) => (
-                <div 
-                  key={idx} 
-                  className={`thumbnail ${activeImage === idx ? 'active' : ''}`}
-                  onClick={() => setActiveImage(idx)}
-                >
-                  <img src={img} alt={`Thumbnail ${idx}`} />
-                </div>
-              ))}
-              {productImages.length > 4 && (
-                <div className="thumbnail-more-icon">
-                  <ChevronRight size={16} />
-                </div>
-              )}
-            </div>
-            
             <div
               className="main-image"
               onTouchStart={handleImageTouchStart}
@@ -173,11 +157,21 @@ const ProductDetails = () => {
               </button>
               
               {productImages.length > 1 && <button className="nav-arrow left" onClick={prevImage}><ChevronLeft size={24} /></button>}
+
+              {/* Blur + spinner while image is loading */}
+              {!imgLoaded && (
+                <div className="img-loading-overlay">
+                  <div className="img-spinner" aria-label="Loading image" />
+                </div>
+              )}
+
               <img
                 src={productImages[activeImage]}
                 alt={`${product.name} — click to view full size`}
-                className="main-product-image"
+                className={`main-product-image ${imgLoaded ? 'img-ready' : 'img-loading'}`}
                 onClick={handleMainImageClick}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
@@ -201,6 +195,23 @@ const ProductDetails = () => {
                       aria-label={`Go to image ${idx + 1}`}
                     />
                   ))}
+                </div>
+              )}
+            </div>
+
+            <div className="thumbnails">
+              {productImages.map((img, idx) => (
+                <div 
+                  key={idx} 
+                  className={`thumbnail ${activeImage === idx ? 'active' : ''}`}
+                  onClick={() => setActiveImage(idx)}
+                >
+                  <img src={img} alt={`Thumbnail ${idx}`} />
+                </div>
+              ))}
+              {productImages.length > 4 && (
+                <div className="thumbnail-more-icon">
+                  <ChevronRight size={16} />
                 </div>
               )}
             </div>
