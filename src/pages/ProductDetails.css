@@ -48,23 +48,15 @@
   align-items: center;
   justify-content: flex-start;
   padding-bottom: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: #d4af37 #111;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
   -webkit-overflow-scrolling: touch;
   position: relative;
 }
 
-/* Custom Webkit scrollbar for premium feel */
+/* Hide scrollbar for Chrome, Safari, and Opera */
 .thumbnails::-webkit-scrollbar {
-  height: 5px;
-}
-.thumbnails::-webkit-scrollbar-track {
-  background: #111;
-  border-radius: 3px;
-}
-.thumbnails::-webkit-scrollbar-thumb {
-  background: #d4af37;
-  border-radius: 3px;
+  display: none;
 }
 
 .thumbnail {
