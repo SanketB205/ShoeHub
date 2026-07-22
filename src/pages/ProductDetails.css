@@ -41,16 +41,35 @@
 .thumbnails {
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
   width: 100%;
   align-items: center;
+  justify-content: flex-start;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 #111;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Custom Webkit scrollbar for premium feel */
+.thumbnails::-webkit-scrollbar {
+  height: 5px;
+}
+.thumbnails::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 3px;
+}
+.thumbnails::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 3px;
 }
 
 .thumbnail {
-  width: 70px;
-  height: 70px;
+  flex: 0 0 75px;
+  height: 75px;
   background-color: #1a1a1a;
   border-radius: 8px;
   overflow: hidden;
@@ -72,11 +91,7 @@
 }
 
 .thumbnail-more-icon {
-  color: #888;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: none; /* hidden since scrollbar replaces more icon */
 }
 
 .main-image {
@@ -111,13 +126,15 @@
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-  border: 1px solid #d4af37;
-  color: #d4af37;
-  padding: 0.2rem 0.8rem;
+  background-color: #d4af37;
+  color: #111;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
   font-size: 0.75rem;
   border-radius: 4px;
   letter-spacing: 1px;
   z-index: 6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .expand-btn {
@@ -781,6 +798,12 @@
 @media (max-width: 768px) {
   .main-image {
     height: 380px;
+  }
+
+  .thumbnail {
+    flex: 0 0 calc((100% - (3 * 0.75rem)) / 4);
+    height: auto;
+    aspect-ratio: 1 / 1;
   }
 
   .swipe-dots {

@@ -34,6 +34,7 @@ const ProductDetails = () => {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const touchStartX = useRef(null);
   const imageWasSwiped = useRef(false);
+  const thumbnailsRef = useRef(null);
 
   const handleBuyNowClick = () => {
     if (!selectedSize) {
@@ -125,6 +126,27 @@ const ProductDetails = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [lightboxOpen, lightboxNext, lightboxPrev]);
 
+  // Scroll active thumbnail automatically into view
+  useEffect(() => {
+    if (thumbnailsRef.current) {
+      const container = thumbnailsRef.current;
+      const activeEl = container.querySelector('.thumbnail.active');
+      if (activeEl) {
+        const containerWidth = container.clientWidth;
+        const activeOffsetLeft = activeEl.offsetLeft;
+        const activeWidth = activeEl.clientWidth;
+        
+        // Calculate position to center the active thumbnail
+        const targetScrollLeft = activeOffsetLeft - (containerWidth / 2) + (activeWidth / 2);
+        
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeImage]);
+
   if (!product) {
     return (
       <div className="product-details-page">
@@ -199,7 +221,7 @@ const ProductDetails = () => {
               )}
             </div>
 
-            <div className="thumbnails">
+            <div className="thumbnails" ref={thumbnailsRef}>
               {productImages.map((img, idx) => (
                 <div 
                   key={idx} 
@@ -209,11 +231,6 @@ const ProductDetails = () => {
                   <img src={img} alt={`Thumbnail ${idx}`} />
                 </div>
               ))}
-              {productImages.length > 4 && (
-                <div className="thumbnail-more-icon">
-                  <ChevronRight size={16} />
-                </div>
-              )}
             </div>
           </div>
 
