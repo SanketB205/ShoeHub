@@ -189,21 +189,21 @@ const ProductDetails = () => {
                 aria-label={`View full size image of ${product.name}`}
               />
               {productImages.length > 1 && <button className="nav-arrow right" onClick={nextImage}><ChevronRight size={24} /></button>}
-            </div>
 
-            {/* Swipe dot indicators — mobile only */}
-            {productImages.length > 1 && (
-              <div className="swipe-dots" aria-hidden="true">
-                {productImages.map((_, idx) => (
-                  <button
-                    key={idx}
-                    className={`swipe-dot ${idx === activeImage ? 'active' : ''}`}
-                    onClick={() => setActiveImage(idx)}
-                    aria-label={`Go to image ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            )}
+              {/* Swipe dot indicators — mobile only, inside image container */}
+              {productImages.length > 1 && (
+                <div className="swipe-dots" aria-hidden="true">
+                  {productImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      className={`swipe-dot ${idx === activeImage ? 'active' : ''}`}
+                      onClick={() => setActiveImage(idx)}
+                      aria-label={`Go to image ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Product Info */}
