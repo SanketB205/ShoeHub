@@ -117,6 +117,7 @@
   font-size: 0.75rem;
   border-radius: 4px;
   letter-spacing: 1px;
+  z-index: 6;
 }
 
 .expand-btn {
@@ -133,6 +134,7 @@
   color: #fff;
   cursor: pointer;
   border: 1px solid #333;
+  z-index: 6;
 }
 
 .nav-arrow {
@@ -149,6 +151,7 @@
   color: #fff;
   border: none;
   cursor: pointer;
+  z-index: 6;
 }
 
 .nav-arrow.left {
@@ -776,6 +779,10 @@
 }
 
 @media (max-width: 768px) {
+  .main-image {
+    height: 380px;
+  }
+
   .swipe-dots {
     display: flex;
     justify-content: center;
