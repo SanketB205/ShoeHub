@@ -763,10 +763,9 @@
     transform: scale(1.35);
   }
 
-  /* Make nav arrows slightly larger and more tappable on mobile */
+  /* Hide nav arrows on mobile — use swipe instead */
   .nav-arrow {
-    width: 44px;
-    height: 44px;
+    display: none;
   }
 
   /* Subtle swipe hint — fades out after 2s via CSS animation */
